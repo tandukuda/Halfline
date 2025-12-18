@@ -389,7 +389,7 @@ export default function HalftoneTool() {
                 onClick={exportSVG}
                 disabled={!image}
                 style={{ backgroundColor: colors.pine, color: colors.base }}
-                className="w-full py-4 rounded-xl font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-20 transition-all text-[10px] flex items-center justify-center gap-3"
+                className="w-full py-4 rounded-xl font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-20 transition-all text-[12px] flex items-center justify-center gap-3"
               >
                 <Download size={16} /> Export SVG
               </button>
@@ -397,7 +397,7 @@ export default function HalftoneTool() {
                 onClick={exportPNG}
                 disabled={!image}
                 style={{ borderColor: colors.pine, color: colors.pine }}
-                className="w-full py-4 rounded-xl font-bold uppercase tracking-widest border-2 hover:bg-white/5 disabled:opacity-20 transition-all text-[10px] flex items-center justify-center gap-3"
+                className="w-full py-4 rounded-xl font-bold uppercase tracking-widest border-2 hover:bg-white/5 disabled:opacity-20 transition-all text-[12px] flex items-center justify-center gap-3"
               >
                 <ImageIcon size={16} /> Export PNG
               </button>
