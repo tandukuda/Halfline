@@ -3,11 +3,119 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   Upload,
   Download,
-  Sliders,
   Image as ImageIcon,
-  Github,
   Palette,
+  Hash,
+  ChevronUp,
+  Plus,
 } from "lucide-react";
+
+const CustomColorPicker = ({
+  label,
+  value,
+  onChange,
+  presets,
+}: {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  presets: string[];
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const quickPresets = presets.slice(0, 4);
+
+  return (
+    <div className="space-y-3 font-mono">
+      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+        {label}
+      </span>
+
+      <div className="flex items-center gap-3">
+        <div className="flex gap-2 p-2 bg-[#232136]/50 rounded-xl border border-[#393552]">
+          {quickPresets.map((color) => (
+            <button
+              key={color}
+              onClick={() => onChange(color)}
+              className={`w-10 h-10 rounded-lg border-2 transition-all ${
+                value.toLowerCase() === color.toLowerCase()
+                  ? "border-white scale-105 shadow-lg"
+                  : "border-transparent hover:scale-105 hover:border-white/20"
+              }`}
+              style={{ backgroundColor: color }}
+            />
+          ))}
+
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className={`w-10 h-10 rounded-lg flex items-center justify-center border-2 transition-all ${
+              isOpen
+                ? "bg-[#eb6f92] border-[#eb6f92] text-[#232136]"
+                : "bg-[#393552] border-transparent text-slate-400 hover:text-white"
+            }`}
+          >
+            {isOpen ? <ChevronUp size={20} /> : <Plus size={20} />}
+          </button>
+        </div>
+
+        <div
+          className="w-10 h-10 rounded-xl border-2 border-[#393552] ml-auto shadow-inner flex items-center justify-center opacity-30"
+          style={{ backgroundColor: value }}
+        >
+          <Hash size={12} />
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="p-4 bg-[#232136] border border-[#393552] rounded-xl space-y-4 shadow-2xl animate-in fade-in slide-in-from-top-2 z-10 relative">
+          <div className="grid grid-cols-5 gap-2">
+            {presets.map((color) => (
+              <button
+                key={color}
+                onClick={() => onChange(color)}
+                className={`w-full aspect-square rounded-md border-2 transition-transform hover:scale-110 ${
+                  value.toLowerCase() === color.toLowerCase()
+                    ? "border-white"
+                    : "border-transparent"
+                }`}
+                style={{ backgroundColor: color }}
+              />
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <div className="relative flex-grow">
+              <Hash
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 opacity-30"
+                size={12}
+              />
+              <input
+                type="text"
+                value={value.replace("#", "")}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (/^[0-9A-Fa-f]{0,6}$/.test(val)) onChange(`#${val}`);
+                }}
+                className="w-full bg-[#191724] border border-[#393552] rounded-lg py-2.5 pl-8 pr-2 text-xs font-mono focus:outline-none focus:border-[#ea9a97] text-[#e0def4]"
+                placeholder="HEX CODE"
+              />
+            </div>
+            <div
+              className="relative w-12 h-10 rounded-lg border border-[#393552] overflow-hidden"
+              style={{ backgroundColor: value }}
+            >
+              <input
+                type="color"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function HalftoneTool() {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
@@ -15,7 +123,6 @@ export default function HalftoneTool() {
   const [maxThickness, setMaxThickness] = useState(6);
   const [minThickness, setMinThickness] = useState(0.2);
   const [contrast, setContrast] = useState(1.2);
-
   const [lineColor, setLineColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#ffffff");
 
@@ -36,6 +143,19 @@ export default function HalftoneTool() {
     iris: "#c4a7e7",
   };
 
+  const presetOptions = [
+    "#000000",
+    "#ffffff",
+    colors.rose,
+    colors.pine,
+    colors.gold,
+    colors.foam,
+    colors.iris,
+    colors.love,
+    "#555555",
+    "#cbd5e1",
+  ];
+
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -54,16 +174,13 @@ export default function HalftoneTool() {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-
       const width = 800;
       const scale = width / image.width;
       canvas.width = width;
       canvas.height = image.height * scale;
-
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = lineColor;
-
       const tempCanvas = document.createElement("canvas");
       const tempCtx = tempCanvas.getContext("2d")!;
       tempCanvas.width = canvas.width;
@@ -76,7 +193,6 @@ export default function HalftoneTool() {
         canvas.width,
         canvas.height,
       ).data;
-
       const spacing = canvas.width / lineCount;
       for (let x = 0; x < canvas.width; x += spacing) {
         for (let y = 0; y < canvas.height; y += 2) {
@@ -114,12 +230,10 @@ export default function HalftoneTool() {
     const width = canvasRef.current.width;
     const height = canvasRef.current.height;
     const spacing = width / lineCount;
-
     let svgParts = [
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`,
       `<rect width="100%" height="100%" fill="${bgColor}"/>`,
     ];
-
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = width;
     tempCanvas.height = height;
@@ -127,7 +241,6 @@ export default function HalftoneTool() {
     tempCtx.filter = `contrast(${contrast}) grayscale(1)`;
     tempCtx.drawImage(image, 0, 0, width, height);
     const pixelData = tempCtx.getImageData(0, 0, width, height).data;
-
     for (let x = 0; x < width; x += spacing) {
       for (let y = 0; y < height; y += 4) {
         const i = (Math.floor(y) * width + Math.floor(x)) * 4;
@@ -142,7 +255,6 @@ export default function HalftoneTool() {
         }
       }
     }
-
     svgParts.push(`</svg>`);
     const blob = new Blob([svgParts.join("")], { type: "image/svg+xml" });
     const link = document.createElement("a");
@@ -154,15 +266,13 @@ export default function HalftoneTool() {
   return (
     <div
       style={{ backgroundColor: colors.base, color: colors.text }}
-      className="min-h-screen flex flex-col font-mono text-base"
+      className="min-h-screen flex flex-col font-mono"
     >
-      {/* Main Content Area */}
       <div className="flex-grow flex items-center justify-center p-6 md:p-12">
         <div
           style={{ backgroundColor: colors.surface }}
           className="max-w-7xl w-full rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row border border-[#393552]"
         >
-          {/* Sidebar */}
           <div
             style={{ backgroundColor: colors.overlay }}
             className="w-full md:w-96 p-10 space-y-8 border-r border-[#232136] overflow-y-auto max-h-[90vh]"
@@ -170,13 +280,13 @@ export default function HalftoneTool() {
             <div>
               <h1
                 style={{ color: colors.rose }}
-                className="text-3xl font-bold tracking-tighter"
+                className="text-3xl font-extrabold tracking-[0em]"
               >
-                HALFLINE
+                Halfline
               </h1>
               <p
                 style={{ color: colors.subtle }}
-                className="text-xs uppercase tracking-[0.3em] mt-2"
+                className="text-[10px] font-bold uppercase tracking-[0.3em] mt-2"
               >
                 Halftone Line Generator
               </p>
@@ -198,60 +308,46 @@ export default function HalftoneTool() {
                 className="cursor-pointer flex flex-col items-center gap-4 text-center"
               >
                 <Upload style={{ color: colors.foam }} size={32} />
-                <span
-                  style={{ color: colors.text }}
-                  className="text-xs font-bold uppercase tracking-widest"
-                >
+                <span className="text-[10px] font-bold uppercase tracking-widest">
                   Select Image
                 </span>
               </label>
             </div>
 
-            {/* Colors Section */}
-            <div className="space-y-4 pt-4">
+            <div className="space-y-6 pt-4">
               <div
-                className="flex items-center gap-3 text-sm font-bold uppercase tracking-widest"
+                className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"
                 style={{ color: colors.iris }}
               >
-                <Palette size={18} /> Appearance
+                <Palette size={16} /> Appearance
               </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                    Line
-                  </span>
-                  <input
-                    type="color"
-                    value={lineColor}
-                    onChange={(e) => setLineColor(e.target.value)}
-                    className="w-full h-12 bg-transparent cursor-pointer rounded-lg overflow-hidden border-none"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                    Background
-                  </span>
-                  <input
-                    type="color"
-                    value={bgColor}
-                    onChange={(e) => setBgColor(e.target.value)}
-                    className="w-full h-12 bg-transparent cursor-pointer rounded-lg overflow-hidden border-none"
-                  />
-                </div>
+              <div className="space-y-8">
+                <CustomColorPicker
+                  label="Stroke"
+                  value={lineColor}
+                  onChange={setLineColor}
+                  presets={presetOptions}
+                />
+                <CustomColorPicker
+                  label="Background"
+                  value={bgColor}
+                  onChange={setBgColor}
+                  presets={presetOptions}
+                />
               </div>
             </div>
 
-            <div className="space-y-8">
+            <div className="space-y-8 pt-6 border-t border-[#393552]">
               {[
                 {
-                  label: "Lines",
+                  label: "Density",
                   val: lineCount,
                   set: setLineCount,
                   min: 20,
                   max: 150,
                 },
                 {
-                  label: "Weight",
+                  label: "Max Weight",
                   val: maxThickness,
                   set: setMaxThickness,
                   min: 1,
@@ -269,7 +365,7 @@ export default function HalftoneTool() {
               ].map((slider) => (
                 <div key={slider.label} className="space-y-4">
                   <div
-                    className="flex justify-between text-xs font-bold uppercase tracking-widest"
+                    className="flex justify-between text-[10px] font-bold uppercase tracking-widest"
                     style={{ color: colors.subtle }}
                   >
                     <span>{slider.label}</span>
@@ -282,8 +378,7 @@ export default function HalftoneTool() {
                     step={slider.step || 1}
                     value={slider.val}
                     onChange={(e) => slider.set(Number(e.target.value))}
-                    className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-[#eb6f92]"
-                    style={{ backgroundColor: colors.base }}
+                    className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-[#eb6f92] bg-[#232136]"
                   />
                 </div>
               ))}
@@ -294,22 +389,21 @@ export default function HalftoneTool() {
                 onClick={exportSVG}
                 disabled={!image}
                 style={{ backgroundColor: colors.pine, color: colors.base }}
-                className="w-full py-5 rounded-xl font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-20 transition-all text-xs flex items-center justify-center gap-3"
+                className="w-full py-4 rounded-xl font-bold uppercase tracking-widest hover:brightness-110 disabled:opacity-20 transition-all text-[10px] flex items-center justify-center gap-3"
               >
-                <Download size={18} /> Export SVG
+                <Download size={16} /> Export SVG
               </button>
               <button
                 onClick={exportPNG}
                 disabled={!image}
                 style={{ borderColor: colors.pine, color: colors.pine }}
-                className="w-full py-5 rounded-xl font-bold uppercase tracking-widest border-2 hover:bg-white/5 disabled:opacity-20 transition-all text-xs flex items-center justify-center gap-3"
+                className="w-full py-4 rounded-xl font-bold uppercase tracking-widest border-2 hover:bg-white/5 disabled:opacity-20 transition-all text-[10px] flex items-center justify-center gap-3"
               >
-                <ImageIcon size={18} /> Export PNG
+                <ImageIcon size={16} /> Export PNG
               </button>
             </div>
           </div>
 
-          {/* Preview Area */}
           <div className="flex-1 p-12 flex items-center justify-center bg-[#232136]/40 min-h-[500px]">
             {image ? (
               <canvas
@@ -323,11 +417,8 @@ export default function HalftoneTool() {
                   size={64}
                   className="mx-auto"
                 />
-                <p
-                  style={{ color: colors.text }}
-                  className="text-sm uppercase tracking-[0.5em]"
-                >
-                  Upload Source
+                <p className="text-[10px] uppercase tracking-[0.5em]">
+                  Waiting for Input
                 </p>
               </div>
             )}
@@ -335,19 +426,18 @@ export default function HalftoneTool() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer
         style={{ color: colors.muted }}
         className="w-full py-10 text-center text-sm tracking-wide border-t border-[#393552]"
       >
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-3 font-mono">
           <span>Halfline © 2025</span>
           <span className="opacity-30">|</span>
           <span>
             Made with <span style={{ color: colors.love }}>❤️</span> by{" "}
           </span>
           <a
-            href="https://github.com/tandukuda"
+            href="https://bio.tandukuda.xyz"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-[#ea9a97] transition-colors underline underline-offset-8"
