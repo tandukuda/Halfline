@@ -26,7 +26,7 @@ const CustomColorPicker = ({
 
   return (
     <div className="space-y-3 font-mono">
-      <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+      <span className="text-[12px] uppercase font-bold text-slate-400 tracking-wider">
         {label}
       </span>
 
@@ -286,7 +286,7 @@ export default function HalftoneTool() {
               </h1>
               <p
                 style={{ color: colors.subtle }}
-                className="text-[10px] font-bold uppercase tracking-[0.3em] mt-2"
+                className="text-[12px] font-bold uppercase tracking-[0.2em] mt-2"
               >
                 Halftone Line Generator
               </p>
@@ -308,7 +308,7 @@ export default function HalftoneTool() {
                 className="cursor-pointer flex flex-col items-center gap-4 text-center"
               >
                 <Upload style={{ color: colors.foam }} size={32} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">
+                <span className="text-[12px] font-bold uppercase tracking-widest">
                   Select Image
                 </span>
               </label>
@@ -316,7 +316,7 @@ export default function HalftoneTool() {
 
             <div className="space-y-6 pt-4">
               <div
-                className="flex items-center gap-3 text-xs font-bold uppercase tracking-widest"
+                className="flex items-center gap-3 text-[14px] font-bold uppercase tracking-widest"
                 style={{ color: colors.iris }}
               >
                 <Palette size={16} /> Appearance
@@ -365,7 +365,7 @@ export default function HalftoneTool() {
               ].map((slider) => (
                 <div key={slider.label} className="space-y-4">
                   <div
-                    className="flex justify-between text-[10px] font-bold uppercase tracking-widest"
+                    className="flex justify-between text-[12px] font-bold uppercase tracking-widest"
                     style={{ color: colors.subtle }}
                   >
                     <span>{slider.label}</span>
@@ -417,7 +417,7 @@ export default function HalftoneTool() {
                   size={64}
                   className="mx-auto"
                 />
-                <p className="text-[10px] uppercase tracking-[0.5em]">
+                <p className="text-[14px] uppercase tracking-[0.5em]">
                   Waiting for Input
                 </p>
               </div>
