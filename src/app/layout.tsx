@@ -1,29 +1,26 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono } from "next/font/google"; // Import the font
+import { JetBrains_Mono } from "next/font/google"; //
 import "./globals.css";
 
-// Configure JetBrains Mono
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
-  variable: "--font-jetbrains", // Define a CSS variable
+  display: "swap", //
 });
 
 export const metadata: Metadata = {
-  title: "Halftone Lines - Rose Pine Moon",
-  description: "Vertical line halftone generator",
+  title: "Halfline",
+  description: "Halftone Line Generator",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      {/* Apply the variable to the body */}
-      <body className={`${jetbrainsMono.variable} antialiased`}>
-        {children}
-      </body>
+      {/* Apply the font class here */}
+      <body className={jetbrainsMono.className}>{children}</body>
     </html>
   );
 }
