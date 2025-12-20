@@ -444,6 +444,14 @@ export default function HalftoneTool() {
           >
             tandukuda
           </a>
+          <a
+            href="https://ko-fi.com/tandukuda"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-[#ea9a97] transition-colors underline underline-offset-8"
+          >
+            Support Me
+          </a>
         </div>
       </footer>
     </div>
