@@ -173,12 +173,13 @@ export default function HalftoneTool() {
   const getQuantizedThickness = (brightness: number): number => {
     const range = maxThickness - minThickness;
 
-    // Map brightness to one of 3 thickness levels
-    if (brightness > 0.66) {
+    // Map brightness to one of 3 thickness levels with smoother transitions
+    // The medium weight is centered around 50% brightness
+    if (brightness > 0.6) {
       // Light areas - thinnest lines
       return minThickness;
-    } else if (brightness > 0.33) {
-      // Medium areas - medium lines
+    } else if (brightness > 0.4) {
+      // Medium areas - medium lines (centered at 50% brightness)
       return minThickness + range * 0.5;
     } else {
       // Dark areas - thickest lines
@@ -211,15 +212,42 @@ export default function HalftoneTool() {
         canvas.height,
       ).data;
       const spacing = canvas.width / lineCount;
+      const mediumThickness =
+        minThickness + (maxThickness - minThickness) * 0.5;
+
       for (let x = 0; x < canvas.width; x += spacing) {
+        let prevThickness: number | null = null;
+
         for (let y = 0; y < canvas.height; y += 2) {
           const i = (Math.floor(y) * canvas.width + Math.floor(x)) * 4;
           const brightness =
             (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 765;
+
           if (brightness < 0.99) {
-            // Use quantized thickness instead of continuous
             const thickness = getQuantizedThickness(brightness);
+
+            // Insert medium-weight transition line if jumping between max and min
+            if (prevThickness !== null) {
+              const isJumpingFromMaxToMin =
+                prevThickness === maxThickness && thickness === minThickness;
+              const isJumpingFromMinToMax =
+                prevThickness === minThickness && thickness === maxThickness;
+
+              if (isJumpingFromMaxToMin || isJumpingFromMinToMax) {
+                // Draw a medium-weight line at the previous position (between prev and current)
+                ctx.fillRect(
+                  x - mediumThickness / 2,
+                  y - 2,
+                  mediumThickness,
+                  2.2,
+                );
+              }
+            }
+
             ctx.fillRect(x - thickness / 2, y, thickness, 2.2);
+            prevThickness = thickness;
+          } else {
+            prevThickness = null;
           }
         }
       }
@@ -258,17 +286,40 @@ export default function HalftoneTool() {
     tempCtx.filter = `contrast(${contrast}) grayscale(1)`;
     tempCtx.drawImage(image, 0, 0, width, height);
     const pixelData = tempCtx.getImageData(0, 0, width, height).data;
+    const mediumThickness = minThickness + (maxThickness - minThickness) * 0.5;
+
     for (let x = 0; x < width; x += spacing) {
+      let prevThickness: number | null = null;
+
       for (let y = 0; y < height; y += 4) {
         const i = (Math.floor(y) * width + Math.floor(x)) * 4;
         const brightness =
           (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 765;
+
         if (brightness < 0.98) {
-          // Use quantized thickness for SVG too
           const thickness = getQuantizedThickness(brightness);
+
+          // Insert medium-weight transition line if jumping between max and min
+          if (prevThickness !== null) {
+            const isJumpingFromMaxToMin =
+              prevThickness === maxThickness && thickness === minThickness;
+            const isJumpingFromMinToMax =
+              prevThickness === minThickness && thickness === maxThickness;
+
+            if (isJumpingFromMaxToMin || isJumpingFromMinToMax) {
+              // Add a medium-weight line at the previous position
+              svgParts.push(
+                `<rect x="${(x - mediumThickness / 2).toFixed(2)}" y="${y - 4}" width="${mediumThickness.toFixed(2)}" height="4.2" fill="${lineColor}"/>`,
+              );
+            }
+          }
+
           svgParts.push(
             `<rect x="${(x - thickness / 2).toFixed(2)}" y="${y}" width="${thickness.toFixed(2)}" height="4.2" fill="${lineColor}"/>`,
           );
+          prevThickness = thickness;
+        } else {
+          prevThickness = null;
         }
       }
     }
