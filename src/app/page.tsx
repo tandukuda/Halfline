@@ -169,6 +169,23 @@ export default function HalftoneTool() {
     }
   };
 
+  // Helper function to quantize thickness to 3 levels
+  const getQuantizedThickness = (brightness: number): number => {
+    const range = maxThickness - minThickness;
+
+    // Map brightness to one of 3 thickness levels
+    if (brightness > 0.66) {
+      // Light areas - thinnest lines
+      return minThickness;
+    } else if (brightness > 0.33) {
+      // Medium areas - medium lines
+      return minThickness + range * 0.5;
+    } else {
+      // Dark areas - thickest lines
+      return maxThickness;
+    }
+  };
+
   useEffect(() => {
     if (image && canvasRef.current) {
       const canvas = canvasRef.current;
@@ -200,8 +217,8 @@ export default function HalftoneTool() {
           const brightness =
             (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 765;
           if (brightness < 0.99) {
-            const thickness =
-              (1 - brightness) * (maxThickness - minThickness) + minThickness;
+            // Use quantized thickness instead of continuous
+            const thickness = getQuantizedThickness(brightness);
             ctx.fillRect(x - thickness / 2, y, thickness, 2.2);
           }
         }
@@ -247,8 +264,8 @@ export default function HalftoneTool() {
         const brightness =
           (pixelData[i] + pixelData[i + 1] + pixelData[i + 2]) / 765;
         if (brightness < 0.98) {
-          const thickness =
-            (1 - brightness) * (maxThickness - minThickness) + minThickness;
+          // Use quantized thickness for SVG too
+          const thickness = getQuantizedThickness(brightness);
           svgParts.push(
             `<rect x="${(x - thickness / 2).toFixed(2)}" y="${y}" width="${thickness.toFixed(2)}" height="4.2" fill="${lineColor}"/>`,
           );
